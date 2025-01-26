@@ -1,11 +1,8 @@
-name: Release Compiled PDF
-
+name: Release Compiled PDF 
 on:
   push:
     tags:
-      - '*.*.*'  # Triggers the workflow on new tags with the format x.y.z
-  release:
-    types: [created]  # Triggers the workflow when a release is created
+      - '*.*.*'
 
 jobs:
   build_latex:
@@ -14,44 +11,29 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
-
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v2
         with:
-          root_file: main.tex  # Replace with your .tex file name
+          root_file: main.tex
 
-      - name: Check if Release Exists
-        id: check_release
-        run: |
-          # Check if the release already exists
-          RELEASE_EXISTS=$(gh release view ${{ github.ref_name }} --json url -q .url 2>/dev/null || echo "false")
-          if [ "$RELEASE_EXISTS" != "false" ]; then
-            echo "Release already exists, skipping creation."
-            echo "::set-output name=release_exists::true"
-          else
-            echo "Release does not exist, creating it."
-            echo "::set-output name=release_exists::false"
-          fi
-
-      - name: Create Release (if it doesn't exist)
-        if: steps.check_release.outputs.release_exists == 'false'
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}  # Use the tag name from the trigger
-          release_name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
 
       - name: Upload Release Asset
-        id: upload-release-asset
+        id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url || steps.check_release.outputs.upload_url }}
-          asset_path: ./main.pdf  # Replace with your compiled PDF file name
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./main.pdf
           asset_name: main.pdf
-          asset_content_type: application/pdf
+          asset_content_type: pdf
