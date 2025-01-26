@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - '*.*.*'
+  release:
+    types: [created]
 
 jobs:
   build_latex:
